@@ -1,5 +1,5 @@
 # colored-terminal
-
+![](https://cloud.githubusercontent.com/assets/2695380/5997327/e8e0c1fe-aa76-11e4-9a4e-61df1f9d4df4.png)
 
 ## Install
     npm install -g thegregorator/colored-terminal
