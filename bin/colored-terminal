@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+
+process.bin = process.title = 'colored-terminal';
+
+var fs = require('fs');
+var resolvePath = require('../src/resolve-path');
+var coloredTerminal = require('../colored-terminal');
+var getopt = require('posix-getopt');
+JSON.minify = JSON.minify || require('node-json-minify');
+
+var PRINT_MODES = [
+    'iterm-escaped',
+    'hex',
+    'rgb',
+    'source',
+    'none'
+];
+
+var options = {
+    configFile: '~/.config/colored-terminal.json',
+    testPath: '.',
+    printMode: (/^iTerm/).test(process.env['TERM_PROGRAM']) ? 'iterm-escaped' : 'none'
+};
+
+var parser, option;
+parser = new getopt.BasicParser(':h(help)c:(config)m:(mode)p:(path)', process.argv);
+while ((option = parser.getopt()) !== undefined && ! option.error) {
+    switch(option.option) {
+    case 'c':
+        options.configFile = option.optarg;
+        break;
+    case 'p':
+        options.testPath = option.optarg;
+        break;
+    case 'm':
+        option.optargLower = option.optarg.toLowerCase();
+        if (PRINT_MODES.indexOf(option.optargLower) === -1) {
+            console.error(process.title + ' - invalid print mode: ' + option.optarg);
+            process.exit(1);
+        }
+        options.printMode = option.optargLower;
+        break;
+    case 'h':
+        console.log(['Directory->color mapping with support for iTerm\'s color escape codes',
+                     'Usage: colored-terminal [OPTION]',
+                     '  -c, --config    configuration file (default: ~/.config/colored-terminal.json)',
+                     '  -p, --path      path to test against the configuration (default: CWD)',
+                     '  -m, --mode      print mode (' + PRINT_MODES.join(', ') + ')',
+                     '                  defaults to "none", or "iterm-escaped" when iTerm is detected',
+                     '  -h, --help      display this help and exit'].join('\n'));
+        process.exit(0);
+    }
+}
+
+try {
+    var rulesJson = fs.readFileSync(resolvePath(options.configFile));
+} catch(e) {
+    console.error('Error reading config JSON: ' + e.message);
+    process.exit(1);
+}
+try {
+    // Parse JSON, removing any comments first
+    var rules = JSON.parse(JSON.minify(rulesJson.toString()));
+} catch(e) {
+    console.error('Error parsing config JSON: ' + e.message);
+    process.exit(1);
+}
+
+
+var colors = coloredTerminal.getColorsFromRules(rules, resolvePath(options.testPath));
+
+if (colors.fg && colors.fg.alpha() !== 1 && colors.bg) {
+    // Blend the foreground color with the background color to support foreground transparency.
+    colors.fgUnblended = colors.fg;
+    colors.fg = colors.bg.mix(colors.fg, colors.fg.alpha()).alpha(colors.bg.alpha);
+}
+
+switch (options.printMode) {
+    case 'iterm-escaped':
+        // Print colors with proprietary iTerm escape codes
+        colors.bg && process.stdout.write('\033]Ph' + colors.bg.hex().substr(1));
+        colors.fg && process.stdout.write('\033]Pg' + colors.fg.hex().substr(1));
+        break;
+    case 'hex':
+        console.log('bg: ' + (colors.bg ? colors.bg.hex() : 'none'));
+        console.log('fg: ' + (colors.fg ? colors.fg.hex() : 'none'));
+        colors.fgUnblended && console.log('fg (unblended): ' + colors.fgUnblended.hex());
+        break;
+    case 'rgb':
+        var getRgbString = function(color) {
+            return color.alpha() === 1 ? color.css() : color.cssa();
+        };
+        console.log('bg: ' + (colors.bg ? getRgbString(colors.bg) : 'none'));
+        console.log('fg: ' + (colors.fg ? getRgbString(colors.fg) : 'none'));
+        colors.fgUnblended && console.log('fg (unblended): ' + getRgbString(colors.fgUnblended));
+        break;
+    case 'source':
+        // Print the source definition of each color.
+        // Useful for debugging configurations.
+        var raw = colors.raw;
+        console.log('bg: ' + (('bg' in raw) ? ('rule[' + raw.indices.bg + ']: ' + JSON.stringify(raw.bg)) : 'none'));
+        console.log('fg: ' + (('fg' in raw) ? ('rule[' + raw.indices.fg + ']: ' + JSON.stringify(raw.fg)) : 'none'));
+        break;
+}

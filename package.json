@@ -1,0 +1,28 @@
+{
+  "name": "colored-terminal",
+  "version": "0.0.1",
+  "description": "Directory->color mapping with support for iTerm's color escape codes",
+  "main": "colored-terminal",
+  "keywords": [
+    "color",
+    "terminal",
+    "shell",
+    "iTerm"
+  ],
+  "bugs": "http://github.com/thegregorator/colored-terminal/issues",
+  "author": "Greg Littlefield",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/thegregorator/colored-terminal.git"
+  },
+  "license": "ISC",
+  "bin": {
+    "colored-terminal": "bin/colored-terminal"
+  },
+  "dependencies": {
+    "posix-getopt": "1.0.0",
+    "onecolor": "2.5.0",
+    "node-json-minify": "0.1.3-a"
+  },
+  "preferGlobal": true
+}

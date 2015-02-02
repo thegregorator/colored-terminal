@@ -1,0 +1,59 @@
+/*******************************************************************************
+ ********************* Configuration for colored-terminal **********************
+ *******************************************************************************
+ *
+ * The configuration file is an array of rule dictionaries, which each consist
+ * of a path matcher and a set of colors.
+ *
+ * Rules are processed from first to last, so rules further down can override
+ * earlier rules.
+ *
+ *
+ * Path matchers can be defined using:
+ *  - "path"       - Matches a directory and its subdirectories.
+ *  - "singlePath" - Matches a single directory.
+ *  - "pathRegex"  - Matches a directory with a regular expression.
+ *                   Can be of the format "expr" or "/expr/flags".
+ *
+ *
+ * Colors can be defined using a dictionary with "fg"/"bg" entries for 
+ * foreground/background colors.
+ *
+ * Non-dictionary colors are treated as background colors (x == {"bg": x}).
+ *
+ * Color values can be specified using formats supported by CSS:
+ *  - "#438"
+ *  - "#483D8B"
+ *  - "rgb(72, 61, 139)"
+ *  - "rgba(72, 61, 139, 1)" (transparent fg colors will be blended with the bg)
+ *  - "darkslateblue"
+ *
+ */
+ 
+[
+    {   // The empty string matches all paths, so these colors are the default.
+        "path":  "",
+        "color": {
+            "bg": "#111",
+            "fg": "#ccc"
+        }
+    },
+
+    {
+        // Match the "Desktop" directory and its subdirectories.
+        "path": "~/Desktop",
+        "color": "#933"
+    },
+    {
+        // Match just the home directory.
+        "singlePath": "~",
+        "color": "#129"
+    },
+    {
+        // Match all "node_modules" directories and subdirectories using regex.
+        "pathRegex": "\\/node_modules($|\\/)",
+        "color": {
+            "fg": "#5c1"
+        }
+    }
+]
