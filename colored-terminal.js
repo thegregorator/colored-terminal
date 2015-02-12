@@ -15,7 +15,8 @@ var getColorsFromRules = function(rules, testPath) {
         var doesMatch = false;
 
         if (typeof rule.path === 'string') {
-            if (startsWith(testPath, resolvePath(rule.path))) {
+            var resolvedPath = resolvePath(rule.path);
+            if (testPath === resolvedPath || startsWith(testPath, resolvedPath + '/')) {
                 doesMatch = true;
             }
         } else if (typeof rule.singlePath === 'string') {

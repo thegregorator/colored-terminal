@@ -1,6 +1,6 @@
 {
   "name": "colored-terminal",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Directory->color mapping with support for iTerm's color escape codes",
   "main": "colored-terminal",
   "keywords": [
